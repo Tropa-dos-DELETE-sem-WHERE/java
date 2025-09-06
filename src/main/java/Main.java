@@ -9,10 +9,12 @@ public class Main {
         int logAleatorio = ThreadLocalRandom.current().nextInt(1,5);
         String[] logs = new String[]
                 {
-                        "[DEBUG] SDADADADS",
-                        "[WARNING] SDADADADS",
-                        "[BD] SDADADADS",
-                        "[INFO] SDADADADS"
+                        "[DEBUG] Conexão com o banco de dados inicializada",
+                        "[TRACE] Requisição recebida no endpoint /api/usuarios",
+                        "[INFO] Usuário 'admin' realizou login com sucesso",
+                        "[ERROR] Falha ao processar pagamento: saldo insuficiente",
+                        "[SUCCESS] Relatório diário gerado e salvo no diretório /logs",
+                        "[WARNING] Uso de memória acima de 80%, possível risco de lentidão"
                 };
         try{
             consoles("Aplicação Iniciando: ");
