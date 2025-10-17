@@ -30,7 +30,8 @@ public class Registro {
     private Double taxaAbandono;
     private String porteEscola;
 
-    public Registro() {}
+    public Registro() {
+    }
 
     public int getAno() {
         return this.ano;
