@@ -11,9 +11,25 @@ import java.sql.PreparedStatement;
 
 public class LeituraInsercaoExcel {
 
+    private void registrarLog(String tipo, String descricao, String erro) {
+        String insertLog = "INSERT INTO log (tipo, descricao, erro) VALUES (?, ?, ?)";
+        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/educadata", "root", "admin");
+             PreparedStatement stmt = con.prepareStatement(insertLog)) {
+
+            stmt.setString(1, tipo);
+            stmt.setString(2, descricao);
+            stmt.setString(3, erro);
+            stmt.executeUpdate();
+
+        } catch (Exception e) {
+            System.out.println("❌ ERRO: " + e.getMessage());
+        }
+    }
+
+
     public void lerExcel(String caminho) {
 
-        // Definindo variáveis de ambiente
+        // Configurações da conexão com o banco de dados
         String url = "jdbc:mysql://localhost:3306/educadata"; // caminho do banco
         String user = "root";       // usuario do MySQL
         String password = "admin";   // senha da conexão
@@ -27,17 +43,17 @@ public class LeituraInsercaoExcel {
                 "inse, pc_formacao_docente, taxa_permanencia, taxa_aprovacao, taxa_reprovacao, taxa_abandono, porte_escola" +
                 ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-        try (Connection conn = DriverManager.getConnection(url, user, password);
+        try (Connection con = DriverManager.getConnection(url, user, password);
 
-             // Criando um "PreparedStatement" para fazer comandos SQL de forma segura
-             PreparedStatement stmt = conn.prepareStatement(insert);
+             // Usando "PreparedStatement" para evitar "SQL Injection" e facilitar a inserção em massa
+             PreparedStatement stmt = con.prepareStatement(insert);
              InputStream arquivo = new FileInputStream(caminho);
              Workbook workbook = new XSSFWorkbook(arquivo)) {
 
             Sheet sheet = workbook.getSheetAt(0);
 
-            // Contador que será usado para executar todos os inserts de uma vez só, a cada XXX vezes
-            int contador = 0;
+            // Contador para controlar o número de registros por batch (executa a cada XXX inserções)
+            int contadorBatch = 0;
 
             // For para percorrer o XLSX
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -77,22 +93,23 @@ public class LeituraInsercaoExcel {
                 stmt.addBatch();
 
                 // Aumentando contador para indicar que adicionamos um insert no Batch
-                contador++;
+                contadorBatch++;
 
                 // Validação para executar o Batch a cada XXX vezes
-                if (contador % 1000 == 0) {
+                if (contadorBatch % 1000 == 0) {
                     stmt.executeBatch();
-                    System.out.println(contador + " registros inseridos...");
+                    System.out.println("✅ INSERÇÃO: " + contadorBatch + " registros inseridos...");
                 }
             }
 
-            // Executando registros que sobraram
+            // Executa o último batch com os registros restantes que não completaram o último lote
             stmt.executeBatch();
-            System.out.println("Inserido " + contador + " registros remanescentes");
-            System.out.println("Processo finalizado com sucesso!");
+            System.out.println("✅ INSERÇÃO: Inserido " + contadorBatch + " registros remanescentes");
+            registrarLog("SUCESSO", "Arquivo inserido com sucesso: " + caminho, "Sem erro");
+            System.out.println("✅ SUCESSO: Arquivo inserido com sucesso: " + caminho);
         } catch (Exception e) {
-            System.out.println("Erro ao ler ou inserir o arquivo: " + e);
-            e.printStackTrace();
+            registrarLog("ERRO", "Sem descrição", e.getMessage());
+            System.out.println("❌ ERRO: " + e.getMessage());
         }
     }
 
