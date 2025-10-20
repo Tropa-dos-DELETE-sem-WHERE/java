@@ -29,10 +29,20 @@ public class LeituraInsercaoExcel {
 
     public void lerExcel(String caminho) {
 
-        // Configurações da conexão com o banco de dados
-        String url = "jdbc:mysql://localhost:3306/educadata"; // caminho do banco
-        String user = "root";       // usuario do MySQL
-        String password = "admin";   // senha da conexão
+
+        // Definindo variáveis de ambiente
+        String url = "jdbc:mysql://54.198.144.59:3306/educadata"; // caminho do banco
+        String user = "Caramico";       // usuario do MySQL
+        String password = "urubu100";   // senha da conexão
+
+
+
+        //Trazendo o o arquivo da S3;
+        ConexaoAws conexaoS3 = new ConexaoAws();
+
+
+
+
 
         // Definindo o insert que será feito
         String insert = "INSERT INTO registro (" +
@@ -45,10 +55,11 @@ public class LeituraInsercaoExcel {
 
         try (Connection con = DriverManager.getConnection(url, user, password);
 
-             // Usando "PreparedStatement" para evitar "SQL Injection" e facilitar a inserção em massa
-             PreparedStatement stmt = con.prepareStatement(insert);
-             InputStream arquivo = new FileInputStream(caminho);
-             Workbook workbook = new XSSFWorkbook(arquivo)) {
+
+             // Criando um "PreparedStatement" para fazer comandos SQL de forma segura
+             PreparedStatement stmt = conn.prepareStatement(insert);
+             Workbook workbook = conexaoS3.conexaoS3()) {
+
 
             Sheet sheet = workbook.getSheetAt(0);
 
