@@ -13,7 +13,7 @@ public class LeituraInsercaoExcel {
 
     private void registrarLog(String tipo, String descricao, String erro) {
         String insertLog = "INSERT INTO log (tipo, descricao, erro) VALUES (?, ?, ?)";
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/educadata", "root", "admin");
+        try (Connection con = DriverManager.getConnection("jdbc:mysql://3.87.253.237:3306/educadata", "Caramico", "urubu100");
              PreparedStatement stmt = con.prepareStatement(insertLog)) {
 
             stmt.setString(1, tipo);
@@ -31,17 +31,13 @@ public class LeituraInsercaoExcel {
 
 
         // Definindo variáveis de ambiente
-        String url = "jdbc:mysql://54.198.144.59:3306/educadata"; // caminho do banco
+        String url = "jdbc:mysql://3.87.253.237:3306/educadata"; // caminho do banco
         String user = "Caramico";       // usuario do MySQL
         String password = "urubu100";   // senha da conexão
 
 
-
         //Trazendo o o arquivo da S3;
         ConexaoAws conexaoS3 = new ConexaoAws();
-
-
-
 
 
         // Definindo o insert que será feito
@@ -57,7 +53,7 @@ public class LeituraInsercaoExcel {
 
 
              // Criando um "PreparedStatement" para fazer comandos SQL de forma segura
-             PreparedStatement stmt = conn.prepareStatement(insert);
+             PreparedStatement stmt = con.prepareStatement(insert);
              Workbook workbook = conexaoS3.conexaoS3()) {
 
 
@@ -119,6 +115,7 @@ public class LeituraInsercaoExcel {
             registrarLog("SUCESSO", "Arquivo inserido com sucesso: " + caminho, "Sem erro");
             System.out.println("✅ SUCESSO: Arquivo inserido com sucesso: " + caminho);
         } catch (Exception e) {
+            System.out.println("Erro na conexão!");
             registrarLog("ERRO", "Sem descrição", e.getMessage());
             System.out.println("❌ ERRO: " + e.getMessage());
         }

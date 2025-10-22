@@ -11,7 +11,7 @@ public class ConexaoSQL {
         dataSource.setServerName("localhost");
         dataSource.setPortNumber(3306);
         dataSource.setDatabaseName("educadata");
-        dataSource.setUser("root");
-        dataSource.setPassword("admin");
+        dataSource.setUser("Caramico");
+        dataSource.setPassword("urubu100");
     }
 }
