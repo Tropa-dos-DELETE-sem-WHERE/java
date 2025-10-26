@@ -22,7 +22,7 @@ public class LeituraInsercaoExcel {
             stmt.executeUpdate();
 
         } catch (Exception e) {
-            System.out.println("❌ ERRO: " + e.getMessage());
+            System.out.println("❌ Erro ao inserir log: " + e.getMessage());
         }
     }
 
@@ -98,6 +98,7 @@ public class LeituraInsercaoExcel {
 
                 // Adicionando o insert no Batch (pacote)
                 stmt.addBatch();
+                // POSSÍVEL LOG
 
                 // Aumentando contador para indicar que adicionamos um insert no Batch
                 contadorBatch++;
@@ -106,17 +107,18 @@ public class LeituraInsercaoExcel {
                 if (contadorBatch % 1000 == 0) {
                     stmt.executeBatch();
                     System.out.println("✅ INSERÇÃO: " + contadorBatch + " registros inseridos...");
+                    // POSSÍVEL LOG
                 }
             }
 
             // Executa o último batch com os registros restantes que não completaram o último lote
             stmt.executeBatch();
-            System.out.println("✅ INSERÇÃO: Inserido " + contadorBatch + " registros remanescentes");
+            System.out.println("✅ INSERÇÃO: Inserido " + contadorBatch + " registros restantes");
             registrarLog("SUCESSO", "Arquivo inserido com sucesso: " + caminho, "Sem erro");
             System.out.println("✅ SUCESSO: Arquivo inserido com sucesso: " + caminho);
         } catch (Exception e) {
-            System.out.println("Erro na conexão!");
-            registrarLog("ERRO", "Sem descrição", e.getMessage());
+            System.out.println("❌ Erro na conexão!");
+            registrarLog("ERRO", "Erro na conexão", e.getMessage());
             System.out.println("❌ ERRO: " + e.getMessage());
         }
     }
