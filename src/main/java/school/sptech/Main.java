@@ -11,6 +11,6 @@ public class Main {
         LeituraInsercaoExcel leitor = new LeituraInsercaoExcel();
 
         // chamando o metodo para ler e inserir os registros no banco de dados
-        leitor.lerExcel(caminhoArquivo);
+        leitor.lerExcel();
     }
 }

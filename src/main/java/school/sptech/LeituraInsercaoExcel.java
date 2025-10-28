@@ -8,12 +8,13 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class LeituraInsercaoExcel {
 
     private void registrarLog(String tipo, String descricao, String erro) {
-        String insertLog = "INSERT INTO log (tipo, descricao, erro) VALUES (?, ?, ?)";
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://3.87.253.237:3306/educadata", "Caramico", "urubu100");
+        String insertLog = "INSERT INTO logs (tipo, descricao, erro) VALUES (?, ?, ?)";
+        try (Connection con = DriverManager.getConnection("jdbc:mysql://98.80.80.214:3306/educadata", "Caramico", "urubu100");
              PreparedStatement stmt = con.prepareStatement(insertLog)) {
 
             stmt.setString(1, tipo);
@@ -26,18 +27,24 @@ public class LeituraInsercaoExcel {
         }
     }
 
-
-    public void lerExcel(String caminho) {
-
-
+    public void lerExcel() {
         // Definindo variáveis de ambiente
-        String url = "jdbc:mysql://3.87.253.237:3306/educadata"; // caminho do banco
+        String url = "jdbc:mysql://98.80.80.214:3306/educadata"; // caminho do banco
         String user = "Caramico";       // usuario do MySQL
         String password = "urubu100";   // senha da conexão
 
-
         //Trazendo o o arquivo da S3;
         ConexaoAws conexaoS3 = new ConexaoAws();
+
+        Workbook workbookS3;
+        try {
+            workbookS3 = conexaoS3.conexaoS3();
+            registrarLog("INFO", "Arquivo Excel obtido com sucesso da S3", "Sem erro");
+        } catch (Exception e) {
+            registrarLog("ERRO_ARQUIVO", "Falha ao obter arquivo da S3", e.getMessage());
+            System.out.println("❌ ERRO AO CARREGAR ARQUIVO: " + e.getMessage());
+            return; // interrompendo o código antes de tentar inserir no banco
+        }
 
 
         // Definindo o insert que será feito
@@ -50,14 +57,15 @@ public class LeituraInsercaoExcel {
                 ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try (Connection con = DriverManager.getConnection(url, user, password);
-
-
              // Criando um "PreparedStatement" para fazer comandos SQL de forma segura
              PreparedStatement stmt = con.prepareStatement(insert);
-             Workbook workbook = conexaoS3.conexaoS3()) {
-
+             Workbook workbook = workbookS3) {
 
             Sheet sheet = workbook.getSheetAt(0);
+
+            // Registrando o início do processo
+            System.out.println("⏳ INICIANDO PROCESSO");
+            registrarLog("INICIO_PROCESSO", "Iniciando leitura e inserção do arquivo", "Sem erro");
 
             // Contador para controlar o número de registros por batch (executa a cada XXX inserções)
             int contadorBatch = 0;
@@ -102,21 +110,35 @@ public class LeituraInsercaoExcel {
                 // Aumentando contador para indicar que adicionamos um insert no Batch
                 contadorBatch++;
 
-                // Validação para executar o Batch a cada XXX vezes
-                if (contadorBatch % 1000 == 0) {
-                    stmt.executeBatch();
-                    System.out.println("✅ INSERÇÃO: " + contadorBatch + " registros inseridos...");
+                // try catch para executar o batch e exibir/inserir logs
+                try {
+                // Validação para executar o Batch a cada 1000 vezes
+                    if (contadorBatch % 1000 == 0) {
+                        stmt.executeBatch(); // executando batch(pacote)
+                        System.out.println("✅ INSERÇÃO: " + contadorBatch + " registros inseridos...");
+                        String mensagem = "Inserido " + contadorBatch + " registros";
+                        registrarLog("SUCESSO_INSERCAO", mensagem, "Sem erro");
+                    }
+                } catch (SQLException e) {
+                    System.err.println("❌ ERRO NA INSERÇÃO EM LOTE: " + e.getMessage());
+                    String mensagemErro = "Erro ao inserir lote de " + contadorBatch + " registros";
+                    registrarLog("ERRO_INSERCAO", mensagemErro, e.getMessage());
+                } catch (Exception e) {
+                    System.err.println("⚠️ ERRO GERAL: " + e.getMessage());
+                    registrarLog("ERRO_GERAL", "Erro inesperado durante a inserção", e.getMessage());
                 }
+
             }
 
             // Executa o último batch com os registros restantes que não completaram o último lote
             stmt.executeBatch();
             System.out.println("✅ INSERÇÃO: Inserido " + contadorBatch + " registros remanescentes");
-            registrarLog("SUCESSO", "Arquivo inserido com sucesso: " + caminho, "Sem erro");
-            System.out.println("✅ SUCESSO: Arquivo inserido com sucesso: " + caminho);
+            String mensagem = "Inserido " + contadorBatch + "registros remanescentes";
+            registrarLog("SUCESSO_INSERCAO", mensagem, "Sem erro");
+            registrarLog("FIM_PROCESSO", "Processo concluído com sucesso. Total de registros inseridos: " + contadorBatch, "Sem erro");
         } catch (Exception e) {
-            System.out.println("Erro na conexão!");
-            registrarLog("ERRO", "Sem descrição", e.getMessage());
+            System.out.println("❌ Erro na conexão");
+            registrarLog("ERRO", "Erro na conexão com o Banco de Dados", e.getMessage());
             System.out.println("❌ ERRO: " + e.getMessage());
         }
     }
