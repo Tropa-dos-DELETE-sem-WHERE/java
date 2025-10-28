@@ -33,6 +33,7 @@ public class LeituraInsercaoExcel {
         String user = "Caramico";       // usuario do MySQL
         String password = "urubu100";   // senha da conexão
 
+
         //Trazendo o o arquivo da S3;
         ConexaoAws conexaoS3 = new ConexaoAws();
 
@@ -57,9 +58,12 @@ public class LeituraInsercaoExcel {
                 ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try (Connection con = DriverManager.getConnection(url, user, password);
+
+
              // Criando um "PreparedStatement" para fazer comandos SQL de forma segura
              PreparedStatement stmt = con.prepareStatement(insert);
-             Workbook workbook = workbookS3) {
+             Workbook workbook = conexaoS3.conexaoS3()) {
+
 
             Sheet sheet = workbook.getSheetAt(0);
 
@@ -106,6 +110,7 @@ public class LeituraInsercaoExcel {
 
                 // Adicionando o insert no Batch (pacote)
                 stmt.addBatch();
+                // POSSÍVEL LOG
 
                 // Aumentando contador para indicar que adicionamos um insert no Batch
                 contadorBatch++;
@@ -127,7 +132,6 @@ public class LeituraInsercaoExcel {
                     System.err.println("⚠️ ERRO GERAL: " + e.getMessage());
                     registrarLog("ERRO_GERAL", "Erro inesperado durante a inserção", e.getMessage());
                 }
-
             }
 
             // Executa o último batch com os registros restantes que não completaram o último lote
