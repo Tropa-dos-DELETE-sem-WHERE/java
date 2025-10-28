@@ -23,9 +23,9 @@ public class ConexaoAws {
             String bucketName = "s3-educadata-dados";
 
             // 4. A "Key" (nome) do arquivo no S3
-            String objectKey = "Book 6.xlsx";
+            String objectKey = "Book.xlsx";
 
-            System.out.println("Tentando ler o arquivo '" + objectKey + "' do S3...");
+            System.out.println("📄 Tentando ler o arquivo '" + objectKey + "' do S3...");
             XSSFWorkbook workbook = null;
 
             try (
@@ -39,7 +39,7 @@ public class ConexaoAws {
 
             ) {
                 // SUCESSO!
-                System.out.println("Arquivo lido com sucesso na memória!");
+                System.out.println("✅ Arquivo lido com sucesso na memória!");
                 // Recurso 2: O workbook do POI
                 workbook = new XSSFWorkbook(s3ObjectStream);
 
@@ -47,11 +47,11 @@ public class ConexaoAws {
 
 
             } catch (S3Exception e) {
-                System.err.println("Erro ao baixar o arquivo do S3: " + e.awsErrorDetails().errorMessage());
+                System.err.println("❌ Erro ao baixar o arquivo do S3: " + e.awsErrorDetails().errorMessage());
                 e.printStackTrace();
             } catch (IOException e) {
                 // Este erro é do Apache POI (ex: arquivo corrompido ou não é .xlsx)
-                System.err.println("Erro ao ler o arquivo Excel (POI): " + e.getMessage());
+                System.err.println("❌ Erro ao ler o arquivo Excel (POI): " + e.getMessage());
                 e.printStackTrace();
             }
 

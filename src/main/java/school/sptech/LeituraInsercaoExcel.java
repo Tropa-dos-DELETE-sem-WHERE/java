@@ -13,8 +13,8 @@ import java.sql.SQLException;
 public class LeituraInsercaoExcel {
 
     private void registrarLog(String tipo, String descricao, String erro) {
-        String insertLog = "INSERT INTO logs (tipo, descricao, erro) VALUES (?, ?, ?)";
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://98.80.80.214:3306/educadata", "Caramico", "urubu100");
+        String insertLog = "INSERT INTO log (tipo, descricao, erro) VALUES (?, ?, ?)";
+        try (Connection con = DriverManager.getConnection("jdbc:mysql://98.86.105.159:3306/educadata", "Caramico", "urubu100");
              PreparedStatement stmt = con.prepareStatement(insertLog)) {
 
             stmt.setString(1, tipo);
@@ -29,7 +29,7 @@ public class LeituraInsercaoExcel {
 
     public void lerExcel() {
         // Definindo variáveis de ambiente
-        String url = "jdbc:mysql://98.80.80.214:3306/educadata"; // caminho do banco
+        String url = "jdbc:mysql://98.86.105.159:3306/educadata"; // caminho do banco
         String user = "Caramico";       // usuario do MySQL
         String password = "urubu100";   // senha da conexão
 
@@ -110,7 +110,6 @@ public class LeituraInsercaoExcel {
 
                 // Adicionando o insert no Batch (pacote)
                 stmt.addBatch();
-                // POSSÍVEL LOG
 
                 // Aumentando contador para indicar que adicionamos um insert no Batch
                 contadorBatch++;
@@ -121,7 +120,7 @@ public class LeituraInsercaoExcel {
                     if (contadorBatch % 1000 == 0) {
                         stmt.executeBatch(); // executando batch(pacote)
                         System.out.println("✅ INSERÇÃO: " + contadorBatch + " registros inseridos...");
-                        String mensagem = "Inserido " + contadorBatch + " registros";
+                        String mensagem = "✅ Inserido " + contadorBatch + " registros";
                         registrarLog("SUCESSO_INSERCAO", mensagem, "Sem erro");
                     }
                 } catch (SQLException e) {
@@ -137,7 +136,7 @@ public class LeituraInsercaoExcel {
             // Executa o último batch com os registros restantes que não completaram o último lote
             stmt.executeBatch();
             System.out.println("✅ INSERÇÃO: Inserido " + contadorBatch + " registros remanescentes");
-            String mensagem = "Inserido " + contadorBatch + "registros remanescentes";
+            String mensagem = "✅ Inserido " + contadorBatch + "registros remanescentes";
             registrarLog("SUCESSO_INSERCAO", mensagem, "Sem erro");
             registrarLog("FIM_PROCESSO", "Processo concluído com sucesso. Total de registros inseridos: " + contadorBatch, "Sem erro");
         } catch (Exception e) {
