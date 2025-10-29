@@ -14,7 +14,7 @@ public class LeituraInsercaoExcel {
 
     private void registrarLog(String tipo, String descricao, String erro) {
         String insertLog = "INSERT INTO log (tipo, descricao, erro) VALUES (?, ?, ?)";
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://54.158.56.244:3306/educadata", "Caramico", "urubu100");
+        try (Connection con = DriverManager.getConnection("jdbc:mysql://172.31.41.5:3306/educadata", "Caramico", "urubu100");
              PreparedStatement stmt = con.prepareStatement(insertLog)) {
 
             stmt.setString(1, tipo);
@@ -29,7 +29,7 @@ public class LeituraInsercaoExcel {
 
     public void lerExcel() {
         // Definindo variáveis de ambiente
-        String url = "jdbc:mysql://54.158.56.244:3306/educadata"; // caminho do banco
+        String url = "jdbc:mysql://172.31.41.5:3306/educadata"; // caminho do banco
         String user = "Caramico";       // usuario do MySQL
         String password = "urubu100";   // senha da conexão
 
