@@ -8,7 +8,7 @@ public class ConexaoSQL {
     // Criando o DataSource para conexão
     public ConexaoSQL() {
         dataSource = new MysqlDataSource();
-        dataSource.setServerName("localhost");
+        dataSource.setServerName("172.31.41.5");
         dataSource.setPortNumber(3306);
         dataSource.setDatabaseName("educadata");
         dataSource.setUser("Caramico");
