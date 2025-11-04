@@ -14,7 +14,19 @@ public class LeituraInsercaoExcel {
 
     private void registrarLog(String tipo, String descricao, String erro) {
         String insertLog = "INSERT INTO log (tipo, descricao, erro) VALUES (?, ?, ?)";
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://172.31.41.5:3306/educadata", "Caramico", "urubu100");
+
+
+        // Estas variáveis (DB_URL, DB_USER, DB_PASSWORD) devem ser configuradas na EC2
+        String dbUrl = System.getenv("DB_URL");
+        String dbUser = System.getenv("DB_USER");
+        String dbPassword = System.getenv("DB_PASSWORD");
+
+        if (dbUrl == null || dbUser == null || dbPassword == null) {
+            System.err.println("❌ ERRO GRAVE no registrarLog: Variáveis de ambiente (DB_URL, DB_USER, DB_PASSWORD) não configuradas.");
+            return;
+        }
+    
+        try (Connection con = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
              PreparedStatement stmt = con.prepareStatement(insertLog)) {
 
             stmt.setString(1, tipo);
@@ -29,9 +41,19 @@ public class LeituraInsercaoExcel {
 
     public void lerExcel() {
         // Definindo variáveis de ambiente
-        String url = "jdbc:mysql://172.31.41.5:3306/educadata"; // caminho do banco
-        String user = "Caramico";       // usuario do MySQL
-        String password = "urubu100";   // senha da conexão
+
+        String url = System.getenv("DB_URL");
+        String user = System.getenv("DB_USER");
+        String password = System.getenv("DB_PASSWORD");
+
+        // Adicionando uma verificação para falhar rápido se as variáveis não estiverem definidas
+        if (url == null || user == null || password == null) {
+            System.err.println("❌ ERRO FATAL: Variáveis de ambiente DB_URL, DB_USER, ou DB_PASSWORD não definidas.");
+            // A chamada 'registrarLog' abaixo também usará as variáveis de ambiente
+            registrarLog("ERRO_CONFIG", "Variáveis de ambiente do banco não encontradas", "null");
+            return;
+        }
+
 
 
         //Trazendo o o arquivo da S3;
@@ -57,6 +79,7 @@ public class LeituraInsercaoExcel {
                 "inse, pc_formacao_docente, taxa_permanencia, taxa_aprovacao, taxa_reprovacao, taxa_abandono, porte_escola" +
                 ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
+        // MODIFICAÇÃO: As variáveis 'url', 'user' e 'password' agora vêm do System.getenv()
         try (Connection con = DriverManager.getConnection(url, user, password);
 
 
@@ -116,7 +139,7 @@ public class LeituraInsercaoExcel {
 
                 // try catch para executar o batch e exibir/inserir logs
                 try {
-                // Validação para executar o Batch a cada 1000 vezes
+                    // Validação para executar o Batch a cada 1000 vezes
                     if (contadorBatch % 1000 == 0) {
                         stmt.executeBatch(); // executando batch(pacote)
                         System.out.println("✅ INSERÇÃO: " + contadorBatch + " registros inseridos...");
